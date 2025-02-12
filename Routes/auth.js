@@ -44,10 +44,24 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
       expiresIn: "1h"
     });
-
+    res.cookie("token", token, { httpOnly: true, secure: process.env.NODE_ENV === "production" });
     res.json({ token });
   } catch (error) {
     res.status(500).json({ message: "Error en el servidor", error });
+  }
+});
+router.get("/current", passport.authenticate("jwt", { session: false }), async (req, res) => {
+  try {
+    // req.user ya contiene el usuario autenticado gracias a Passport
+    if (!req.user) {
+      return res.status(401).json({ message: "No estás autenticado" });
+    }
+
+    // Devuelve los datos del usuario
+    res.json({ user: req.user });
+  } catch (error) {
+    console.error("🔴 Error en /current:", error);
+    res.status(500).json({ message: "Error en el servidor", error: error.message });
   }
 });
 

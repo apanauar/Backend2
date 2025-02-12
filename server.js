@@ -4,9 +4,11 @@ const passport = require("./Config/Passport");
 console.log("📌 Cargando rutas...");
 const authRoutes = require("./Routes/auth");
 console.log("📌 Rutas cargadas:", authRoutes.stack?.map(layer => layer.route?.path));
+const cookieParser = require("cookie-parser");
 require("dotenv").config();
 
 const app = express();
+app.use(cookieParser());
 app.use(express.json());
 app.use(passport.initialize());
 
