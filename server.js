@@ -10,13 +10,16 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(passport.initialize());
 
+
+
+
 app.use((req, res, next) => {
   console.log(`🟡 Petición recibida: ${req.method} ${req.originalUrl}`);
   next();
 });
 
 // Rutas
-app.use("/api/auth",authRoutes);
+app.use("/api/auth", authRoutes);
 console.log("📌 Listado de rutas registradas en Express:");
 app._router.stack.forEach((layer) => {
   if (layer.route) {
@@ -29,6 +32,9 @@ app._router.stack.forEach((layer) => {
     });
   }
 });
+
+console.log("📌 Rutas cargadas en Express:", authRoutes);
+
 app.get("/", (req, res) => {
   res.send("🟢 Servidor funcionando");
 });

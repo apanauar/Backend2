@@ -7,15 +7,17 @@ require("dotenv").config();
 
 const router = express.Router();
 
+
+
 // Registro de usuario
-router.post("/api/auth/register", async (req, res) => {
+router.post("/register", async (req, res) => {
   try {
     const { first_name, last_name, email, age, password } = req.body;
-
+    
     if (!first_name || !last_name || !email || !age || !password) {
       return res.status(400).json({ message: "Todos los campos son obligatorios" });
     }
-
+    
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ message: "Email ya registrado" });
 
@@ -30,14 +32,14 @@ router.post("/api/auth/register", async (req, res) => {
   }
 });
 
-router.post("/api/auth/login", async (req, res) => {
+router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: "Usuario no encontrado" });
 
-    const isMatch = bcrypt.compareSync(password, user.password);
+    const isMatch = await bcrypt.compare(password, user.password); // 
     if (!isMatch) return res.status(400).json({ message: "Contraseña incorrecta" });
 
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
@@ -53,8 +55,9 @@ router.post("/api/auth/login", async (req, res) => {
 });
 
 
+
 // Obtener usuario actual (requiere autenticación)
-router.get("/api/auth/current", passport.authenticate("jwt", { session: false }), async (req, res) => {
+router.get("/current", passport.authenticate("jwt", { session: false }), async (req, res) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: "No estás autenticado" });
@@ -68,7 +71,7 @@ router.get("/api/auth/current", passport.authenticate("jwt", { session: false })
 });
 
 // Ruta protegida (Ejemplo)
-router.get("/api/auth/profile", passport.authenticate("jwt", { session: false }), (req, res) => {
+router.get("/profile", passport.authenticate("jwt", { session: false }), (req, res) => {
   res.json({ user: req.user });
 });
 
