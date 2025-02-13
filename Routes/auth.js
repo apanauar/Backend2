@@ -2,13 +2,13 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const passport = require("passport");
-const User = require("../Models/user");
+const User = require("../Models/User"); 
 require("dotenv").config();
 
 const router = express.Router();
 
 // Registro de usuario
-router.post("/register", async (req, res) => {
+router.post("/api/auth/register", async (req, res) => {
   try {
     const { first_name, last_name, email, age, password } = req.body;
 
@@ -30,34 +30,36 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// Login de usuario
-router.post("/login", async (req, res) => {
+router.post("/api/auth/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: "Usuario no encontrado" });
 
-    if (!user.comparePassword(password))
-      return res.status(400).json({ message: "Contraseña incorrecta" });
+    const isMatch = bcrypt.compareSync(password, user.password);
+    if (!isMatch) return res.status(400).json({ message: "Contraseña incorrecta" });
 
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
       expiresIn: "1h"
     });
+
     res.cookie("token", token, { httpOnly: true, secure: process.env.NODE_ENV === "production" });
     res.json({ token });
   } catch (error) {
-    res.status(500).json({ message: "Error en el servidor", error });
+    console.error("🔴 Error en /login:", error);
+    res.status(500).json({ message: "Error en el servidor", error: error.message });
   }
 });
-router.get("/current", passport.authenticate("jwt", { session: false }), async (req, res) => {
+
+
+// Obtener usuario actual (requiere autenticación)
+router.get("/api/auth/current", passport.authenticate("jwt", { session: false }), async (req, res) => {
   try {
-    // req.user ya contiene el usuario autenticado gracias a Passport
     if (!req.user) {
       return res.status(401).json({ message: "No estás autenticado" });
     }
 
-    // Devuelve los datos del usuario
     res.json({ user: req.user });
   } catch (error) {
     console.error("🔴 Error en /current:", error);
@@ -65,10 +67,11 @@ router.get("/current", passport.authenticate("jwt", { session: false }), async (
   }
 });
 
-// Ruta protegida
-router.get("/profile", passport.authenticate("jwt", { session: false }), (req, res) => {
+// Ruta protegida (Ejemplo)
+router.get("/api/auth/profile", passport.authenticate("jwt", { session: false }), (req, res) => {
   res.json({ user: req.user });
 });
 
 module.exports = router;
+
 
