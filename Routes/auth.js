@@ -22,7 +22,7 @@ router.post("/register", async (req, res) => {
     if (existingUser) return res.status(400).json({ message: "Email ya registrado" });
 
     const hashedPassword = bcrypt.hashSync(password, 10);
-    const newUser = new User({ first_name, last_name, email, age, password: hashedPassword });
+    const newUser = new User({ first_name, last_name, email, age, password: hashedPassword,role: role || "user", });
     await newUser.save();
 
     res.status(201).json({ message: "Usuario registrado exitosamente" });
@@ -69,11 +69,11 @@ router.get("/current", passport.authenticate("jwt", { session: false }), async (
     res.status(500).json({ message: "Error en el servidor", error: error.message });
   }
 });
-
-// Ruta protegida (Ejemplo)
-router.get("/profile", passport.authenticate("jwt", { session: false }), (req, res) => {
-  res.json({ user: req.user });
+const authorize = require("../middleware/auth");
+router.get("/admin", passport.authenticate("jwt", { session: false }), authorize(["admin"]), (req, res) => {
+  res.json({ message: "Bienvenido, administrador" });
 });
+
 
 module.exports = router;
 

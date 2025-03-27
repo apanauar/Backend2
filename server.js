@@ -32,6 +32,8 @@ app._router.stack.forEach((layer) => {
     });
   }
 });
+const ticketRoutes = require("./Routes/ticket");
+app.use("/api/tickets", ticketRoutes);
 
 console.log("📌 Rutas cargadas en Express:", authRoutes);
 

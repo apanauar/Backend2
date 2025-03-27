@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
   age: { type: Number, required: true },
   password: { type: String, required: true },
   cart: { type: mongoose.Schema.Types.ObjectId, ref: "Carts" },
-  role: { type: String, default: "user" }
+  role: { type: String, enum: ["user", "admin"], default: "user" }, 
 });
 
 // Middleware para encriptar la contraseña antes de guardar el usuario
